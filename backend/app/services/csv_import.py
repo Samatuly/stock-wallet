@@ -82,6 +82,28 @@ def parse_date(raw: str) -> date:
     raise ValueError(f"не удалось распознать дату {raw!r}, используйте ГГГГ-ММ-ДД или ДД.ММ.ГГГГ")
 
 
+# Названия бирж и стран, которые встречаются в отчётах брокеров (Freedom, Halyk, Tabys и др.)
+MARKET_ALIASES = {
+    "KZ": ("KASE", "AIX", "KZ", "KAZ", "КАЗАХСТАН", "КАСЕ", "МФЦА", "AIFC"),
+    "US": ("NYSE", "NASDAQ", "AMEX", "ARCA", "US", "USA", "США", "ITS", "SPB"),
+    "EU": ("XETRA", "LSE", "EURONEXT", "FRANKFURT", "EU", "ЕВРОПА", "EUROPE", "LSE", "SIX", "BME", "MIL"),
+}
+
+
+def normalize_market(raw: str, ticker: str) -> str:
+    """'KASE' -> KZ, 'NYSE/NASDAQ' -> US, 'ITS (США)' -> US. Пусто -> угадываем по тикеру."""
+    value = raw.strip().upper()
+    if not value:
+        return guess_market(ticker)
+    if value in DEFAULT_CURRENCY:
+        return value
+    words = set(re.findall(r"[A-ZА-ЯЁ]+", value))
+    for market, names in MARKET_ALIASES.items():
+        if words & set(names):
+            return market
+    raise ValueError(f"неизвестный рынок {raw.strip()!r}: укажите US, EU или KZ (или биржу: NYSE, NASDAQ, KASE, AIX, XETRA, LSE)")
+
+
 def guess_market(ticker: str) -> str:
     t = ticker.upper()
     if t.endswith(".KZ"):
@@ -127,9 +149,7 @@ def parse_csv(text: str) -> tuple[list[tuple[int, PositionCreate]], list[tuple[i
             ticker = cell(row, "ticker").upper()
             if not ticker:
                 raise ValueError("не указан тикер")
-            market = cell(row, "market").upper() or guess_market(ticker)
-            if market not in DEFAULT_CURRENCY:
-                raise ValueError(f"неизвестный рынок {market!r}: допустимы US, EU, KZ")
+            market = normalize_market(cell(row, "market"), ticker)
             fee_raw = cell(row, "fee")
             position = PositionCreate(
                 ticker=ticker,

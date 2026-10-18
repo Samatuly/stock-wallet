@@ -17,3 +17,21 @@ def test_template_parses_without_errors():
     assert rows[0][1].buy_price == 172.40
     assert rows[2][1].fee == 2.5
     assert rows[2][1].currency == "EUR"
+
+
+import pytest
+
+from app.services.csv_import import normalize_market
+
+
+@pytest.mark.parametrize(
+    "raw,expected",
+    [("KASE", "KZ"), ("AIX", "KZ"), ("NYSE/NASDAQ", "US"), ("ITS (США)", "US"), ("xetra", "EU"), ("kz", "KZ"), ("", "US")],
+)
+def test_market_aliases(raw, expected):
+    assert normalize_market(raw, "AAPL") == expected
+
+
+def test_unknown_market_is_error():
+    with pytest.raises(ValueError):
+        normalize_market("Луна", "AAPL")
