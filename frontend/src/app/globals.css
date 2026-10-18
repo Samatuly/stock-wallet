@@ -1,0 +1,437 @@
+/* Палитра — "чернильный гроссбух": прохладная бумага, тёмно-синие чернила,
+   глубокий тил как единственный яркий акцент, тёплая охра — для предупреждений. */
+:root {
+  --paper: #f2f5f7;
+  --surface: #ffffff;
+  --ink: #101d29;
+  --muted: #5c6b78;
+  --rule: #e0e6ea;
+  --accent: #0b6e6b;
+  --accent-ink: #ffffff;
+  --gain: #1a7a4c;
+  --loss: #b23a2e;
+  --attn: #a3660f;
+  --radius: 8px;       /* кнопки, поля */
+  --radius-lg: 14px;   /* карточки */
+  --shadow: 0 1px 2px rgba(16, 29, 41, 0.05), 0 4px 16px rgba(16, 29, 41, 0.04);
+  --bar-h: 56px;
+
+  --market-us: #0b6e6b;
+  --market-eu: #a3660f;
+  --market-kz: #5b4b9c;
+
+  --font-sans: "Space Grotesk", ui-sans-serif, -apple-system, "Segoe UI", Roboto, sans-serif;
+  --font-mono: "IBM Plex Mono", ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+}
+
+* { box-sizing: border-box; }
+html { -webkit-text-size-adjust: 100%; scroll-padding-top: calc(var(--bar-h) + 12px); }
+
+body {
+  margin: 0;
+  background: var(--paper);
+  color: var(--ink);
+  font-family: var(--font-sans);
+  font-size: 15px;
+  line-height: 1.5;
+}
+
+/* Числа и тикеры моноширинным шрифтом, чтобы колонки выравнивались как в ленте котировок. */
+td.num, .ticker, .combined-value, .total-value, .currency-switch button, input, select {
+  font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
+}
+
+main { max-width: 1080px; margin: 0 auto; padding: 0 20px 56px; }
+
+h1 { margin: 0; font-size: 1.6rem; font-weight: 650; letter-spacing: -0.015em; font-family: var(--font-sans); }
+h2 { margin: 0 0 14px; font-size: 1.05rem; font-weight: 650; font-family: var(--font-sans); }
+
+/* ---------- Верхняя панель ---------- */
+.appbar {
+  position: sticky; top: 0; z-index: 40;
+  background: color-mix(in srgb, var(--surface) 92%, transparent);
+  backdrop-filter: saturate(1.4) blur(10px);
+  -webkit-backdrop-filter: saturate(1.4) blur(10px);
+  border-bottom: 1px solid var(--rule);
+  padding-top: env(safe-area-inset-top);
+}
+.appbar-inner {
+  max-width: 1080px; margin: 0 auto; height: var(--bar-h);
+  padding: 0 20px; display: flex; align-items: center; gap: 24px;
+}
+.brand {
+  display: inline-flex; align-items: center; gap: 9px; color: var(--ink); text-decoration: none;
+  font-weight: 700; font-size: 1.02rem; letter-spacing: -0.01em; white-space: nowrap;
+}
+.brand-mark { width: 18px; height: 18px; border-radius: 5px; background: var(--accent); position: relative; }
+.brand-mark::after {
+  content: ""; position: absolute; left: 4px; right: 4px; bottom: 4px; height: 6px;
+  border-left: 2px solid #fff; border-bottom: 2px solid #fff; transform: skewX(-20deg) scaleY(-1); opacity: 0.9;
+}
+.nav-desktop { display: flex; align-items: center; gap: 2px; margin-left: auto; }
+.nav-desktop a, .nav-more-btn {
+  display: inline-flex; align-items: center; gap: 5px;
+  padding: 7px 12px; border-radius: var(--radius); color: var(--muted); text-decoration: none;
+  font-weight: 600; font-size: 0.9rem; background: none; min-height: 0; border: 0;
+}
+.nav-desktop a:hover, .nav-more-btn:hover { color: var(--ink); background: var(--paper); filter: none; }
+.nav-desktop a.active, .nav-more-btn.active { color: var(--accent); background: color-mix(in srgb, var(--accent) 9%, transparent); }
+.nav-more { position: relative; }
+.nav-popover {
+  position: absolute; right: 0; top: calc(100% + 6px); min-width: 200px; padding: 4px;
+  background: var(--surface); border: 1px solid var(--rule); border-radius: 12px;
+  box-shadow: 0 10px 30px rgba(16, 29, 41, 0.14);
+}
+.nav-popover a { display: flex; width: 100%; padding: 10px 12px; }
+
+.menu-btn {
+  display: none; margin-left: auto; width: 44px; height: 44px; padding: 0; min-height: 0;
+  align-items: center; justify-content: center; background: none; color: var(--ink); border-radius: 10px;
+}
+.menu-btn:hover { background: var(--paper); filter: none; }
+.nav-mobile {
+  position: absolute; left: 0; right: 0; top: 100%; z-index: 41; background: var(--surface);
+  border-bottom: 1px solid var(--rule); box-shadow: 0 16px 30px rgba(16, 29, 41, 0.14);
+  padding: 6px 12px 12px; display: flex; flex-direction: column; max-height: calc(100vh - var(--bar-h)); overflow-y: auto;
+}
+.nav-mobile a {
+  padding: 14px 12px; border-radius: 10px; color: var(--ink); text-decoration: none; font-weight: 600; font-size: 1rem;
+  min-height: 48px; display: flex; align-items: center;
+}
+.nav-mobile a.active { color: var(--accent); background: color-mix(in srgb, var(--accent) 9%, transparent); }
+.menu-backdrop { position: fixed; inset: 0; z-index: 30; background: rgba(16, 29, 41, 0.28); }
+
+.page-head { padding: 28px 0 18px; display: flex; align-items: center; justify-content: space-between; gap: 16px; }
+.page-actions { display: flex; align-items: center; gap: 10px; }
+
+/* ---------- Карточки ---------- */
+.card {
+  background: var(--surface); border: 1px solid var(--rule); border-radius: var(--radius-lg);
+  padding: 20px; margin-bottom: 16px; box-shadow: var(--shadow);
+}
+.card-flush { padding-top: 0; padding-bottom: 0; }
+
+/* Итоги по валютам */
+.totals { display: flex; flex-wrap: wrap; gap: 12px 40px; margin-bottom: 0; }
+.total-value { font-size: 1.6rem; font-weight: 600; line-height: 1.15; }
+.total-pnl { font-size: 1rem; font-weight: 600; font-family: var(--font-mono); }
+.total-meta { color: var(--muted); font-size: 0.8rem; margin-top: 2px; }
+
+/* ---------- Таблицы ---------- */
+.table-wrap { overflow-x: auto; margin: -4px; padding: 4px; -webkit-overflow-scrolling: touch; }
+table { width: 100%; border-collapse: collapse; min-width: 560px; }
+.table-wrap.positions table { min-width: 720px; }
+th {
+  text-align: left; font-weight: 600; color: var(--muted); font-size: 0.78rem;
+  padding: 8px 10px; border-bottom: 1px solid var(--rule); font-family: var(--font-sans);
+}
+td { padding: 13px 10px; border-bottom: 1px solid var(--rule); vertical-align: top; }
+tr:last-child td { border-bottom: 0; }
+tr.pos:hover td { background: color-mix(in srgb, var(--accent) 4%, transparent); }
+.num { text-align: right; white-space: nowrap; }
+.ticker { font-weight: 650; font-size: 0.98rem; letter-spacing: 0.01em; }
+.sub { color: var(--muted); font-size: 0.78rem; font-family: var(--font-sans); display: flex; align-items: center; gap: 5px; }
+.sub.attn { color: var(--attn); }
+.gain { color: var(--gain); }
+.loss { color: var(--loss); }
+.flat { color: var(--ink); }
+.actions { white-space: nowrap; text-align: right; width: 1%; }
+.note-row td { padding-top: 0; }
+.warning { color: var(--attn); font-size: 0.85rem; margin-right: 12px; font-family: var(--font-sans); }
+.empty { color: var(--muted); margin: 8px 0; }
+
+.market-dot { display: inline-block; width: 7px; height: 7px; border-radius: 50%; flex-shrink: 0; }
+.market-dot.us { background: var(--market-us); }
+.market-dot.eu { background: var(--market-eu); }
+.market-dot.kz { background: var(--market-kz); }
+
+/* ---------- Кнопки и поля ---------- */
+button {
+  font: inherit; font-family: var(--font-sans); background: var(--accent); color: var(--accent-ink);
+  border: 0; border-radius: var(--radius); padding: 9px 16px; cursor: pointer; min-height: 38px; font-weight: 600;
+  transition: filter 0.12s;
+}
+button:hover { filter: brightness(1.08); }
+button:disabled { opacity: 0.55; cursor: default; filter: none; }
+button.link { background: none; color: var(--accent); padding: 4px 6px; min-height: 0; }
+button.link:hover { text-decoration: underline; filter: none; }
+button.link.danger { color: var(--loss); }
+button.secondary { background: none; border: 1px solid var(--rule); color: var(--ink); }
+button.secondary:hover { background: var(--paper); filter: none; }
+
+input, select, textarea {
+  font: inherit; width: 100%; padding: 9px 12px; border: 1px solid #cfd8de; border-radius: var(--radius);
+  background: #fff; color: var(--ink); min-height: 40px;
+}
+input:focus, select:focus, textarea:focus { border-color: var(--accent); }
+label { display: block; font-size: 0.85rem; color: var(--muted); font-family: var(--font-sans); }
+label input, label select { margin-top: 5px; color: var(--ink); font-size: 1rem; }
+small { display: block; margin-top: 3px; font-size: 0.75rem; color: var(--muted); font-family: var(--font-sans); }
+
+.add-form .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 14px 16px; margin-bottom: 18px; }
+.add-form .wide { grid-column: 1 / -1; }
+
+.inline-form { display: inline-flex; gap: 8px; align-items: center; vertical-align: middle; }
+.inline-form input { width: 150px; min-height: 36px; }
+.inline-form button { min-height: 36px; }
+
+.error { color: var(--loss); margin: 0 0 12px; font-family: var(--font-sans); }
+.banner { background: #fbeceb; border: 1px solid #ecc3c0; border-radius: var(--radius); padding: 10px 14px; }
+
+footer { color: var(--muted); font-size: 0.8rem; margin-top: 28px; font-family: var(--font-sans); }
+.sr-only { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+
+button:focus-visible, input:focus-visible, select:focus-visible, textarea:focus-visible, a:focus-visible, summary:focus-visible {
+  outline: 2px solid var(--accent); outline-offset: 2px;
+}
+
+/* Меню действий в строке позиции */
+.row-menu { position: relative; display: inline-block; }
+.icon-btn { background: none; color: var(--muted); width: 36px; height: 36px; padding: 0; min-height: 0; display: inline-flex; align-items: center; justify-content: center; border-radius: 8px; }
+.icon-btn:hover { background: var(--paper); color: var(--ink); filter: none; }
+.row-menu-pop {
+  position: absolute; right: 0; top: calc(100% + 4px); z-index: 20; min-width: 200px; padding: 4px; text-align: left;
+  background: var(--surface); border: 1px solid var(--rule); border-radius: 12px; box-shadow: 0 10px 30px rgba(16, 29, 41, 0.14);
+}
+.row-menu-pop button {
+  display: block; width: 100%; text-align: left; background: none; color: var(--ink);
+  padding: 10px 12px; min-height: 40px; font-weight: 500; border-radius: 8px;
+}
+.row-menu-pop button:hover { background: var(--paper); filter: none; }
+.row-menu-pop button.danger { color: var(--loss); }
+
+/* Раскрывающиеся разделы (прогнозы, добавление позиции) */
+.collapsible { border-top: 1px solid var(--rule); }
+.card-flush > .collapsible { border-top: 0; }
+.collapsible-head {
+  width: 100%; display: flex; align-items: center; justify-content: space-between; gap: 12px; text-align: left;
+  background: none; color: var(--ink); padding: 14px 0; min-height: 48px; font-weight: 650; border-radius: 0;
+}
+.collapsible-head:hover { filter: none; color: var(--accent); }
+.collapsible-title { display: flex; flex-wrap: wrap; align-items: baseline; gap: 4px 10px; }
+.collapsible-hint { font-weight: 400; font-size: 0.8rem; color: var(--muted); }
+.collapsible-chevron { flex-shrink: 0; color: var(--muted); transition: transform 0.15s; }
+.collapsible.open .collapsible-chevron { transform: rotate(180deg); }
+.collapsible-body { padding-bottom: 16px; }
+.collapsible-body[hidden] { display: none; }
+.collapsible .forecast-panel { border-top: 0; padding-top: 0; margin-top: 0; }
+
+/* Переключатель валют и общий итог */
+.currency-switch { display: inline-flex; gap: 2px; background: var(--surface); border: 1px solid var(--rule); border-radius: 999px; padding: 3px; margin-bottom: 14px; }
+.currency-switch button {
+  background: none; color: var(--muted); padding: 5px 14px; border-radius: 999px;
+  font-weight: 650; font-size: 0.85rem; min-height: 0;
+}
+.currency-switch button:hover { color: var(--ink); filter: none; }
+.currency-switch button.active { background: var(--accent); color: var(--accent-ink); }
+
+.combined { margin-bottom: 22px; }
+.combined-value { font-size: 2.6rem; font-weight: 600; line-height: 1.05; letter-spacing: -0.02em; }
+.combined-pnl { font-size: 1.1rem; font-weight: 600; margin-top: 6px; }
+.combined-meta { color: var(--muted); font-size: 0.8rem; margin-top: 6px; font-family: var(--font-sans); }
+
+.by-currency { margin: -8px 0 18px; }
+.by-currency summary { cursor: pointer; color: var(--accent); font-size: 0.88rem; font-weight: 650; margin-bottom: 10px; font-family: var(--font-sans); }
+
+@media (prefers-reduced-motion: reduce) {
+  * { transition: none !important; animation: none !important; }
+}
+
+/* Мини-график цены и кнопка-тикер, открывающая его */
+.ticker-btn {
+  background: none; border: 0; padding: 0; min-height: 0; cursor: pointer;
+  display: inline-flex; align-items: center; gap: 6px; color: inherit;
+}
+.ticker-btn:hover .ticker { text-decoration: underline; text-underline-offset: 3px; }
+
+.chart { display: flex; flex-direction: column; gap: 10px; padding: 10px 4px 4px; }
+.chart-panel + .chart-panel { padding-top: 8px; border-top: 1px solid var(--rule); }
+.chart-meta { display: flex; justify-content: space-between; color: var(--muted); font-size: 0.75rem; margin-top: 4px; font-family: var(--font-mono); }
+.chart-legend { display: flex; align-items: center; gap: 14px; margin-bottom: 4px; font-family: var(--font-sans); font-size: 0.78rem; color: var(--muted); }
+.legend-item { display: inline-flex; align-items: center; gap: 5px; }
+.legend-item .swatch { width: 9px; height: 9px; border-radius: 2px; display: inline-block; }
+.chart-current { margin-left: auto; font-family: var(--font-mono); color: var(--ink); font-weight: 600; }
+
+.form-actions { display: flex; gap: 10px; align-items: center; }
+button.secondary { background: none; border: 1px solid var(--rule); color: var(--ink); }
+
+/* Навигация между Портфелем и Дашбордом */
+.top-actions { display: flex; align-items: center; gap: 12px; }
+.link-button {
+  color: var(--accent); text-decoration: none; font-weight: 650; font-size: 0.9rem;
+  font-family: var(--font-sans);
+}
+.link-button:hover { text-decoration: underline; }
+
+/* Сетка карточек дашборда */
+.dashboard-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 16px; margin-bottom: 16px; }
+.dashboard-grid .card { margin-bottom: 0; }
+
+.vol-headline {
+  display: flex; justify-content: space-between; align-items: baseline; gap: 12px;
+  font-family: var(--font-sans); color: var(--muted); font-size: 0.9rem;
+}
+.vol-headline strong { font-family: var(--font-mono); font-size: 1.4rem; color: var(--ink); }
+
+/* Аллокация: подписанные полоски */
+.allocation-block h3, .ranked-block h3, .volatility-block h3 {
+  margin: 0 0 12px; font-size: 0.95rem; font-weight: 650; font-family: var(--font-sans);
+}
+.allocation-list { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 10px; }
+.allocation-row { display: flex; justify-content: space-between; gap: 8px; font-size: 0.85rem; margin-bottom: 4px; }
+.allocation-label { font-family: var(--font-sans); color: var(--ink); font-weight: 600; }
+.allocation-value { font-family: var(--font-mono); color: var(--muted); white-space: nowrap; }
+.allocation-bar { height: 6px; background: var(--paper); border-radius: 999px; overflow: hidden; }
+.allocation-bar-fill { height: 100%; background: var(--accent); border-radius: 999px; }
+
+/* Лидеры / аутсайдеры */
+.ranked-list { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 8px; }
+.ranked-list li { display: flex; justify-content: space-between; font-size: 0.9rem; padding: 4px 0; border-bottom: 1px solid var(--rule); }
+.ranked-list li:last-child { border-bottom: 0; }
+.ranked-list .ticker { font-weight: 650; }
+
+/* Таблица волатильности */
+.hint { color: var(--muted); font-size: 0.8rem; margin: -6px 0 12px; font-family: var(--font-sans); }
+.hint-inline { color: var(--muted); font-size: 0.78rem; }
+.volatility-table { width: 100%; border-collapse: collapse; }
+.volatility-table th { text-align: left; font-size: 0.78rem; color: var(--muted); font-weight: 600; padding: 6px 8px; border-bottom: 1px solid var(--rule); font-family: var(--font-sans); }
+.volatility-table td { padding: 8px; border-bottom: 1px solid var(--rule); font-size: 0.9rem; }
+.volatility-table tr:last-child td { border-bottom: 0; }
+
+/* Полоска фундаментальных метрик под графиком акции */
+.fundamentals-strip {
+  display: flex; flex-wrap: wrap; gap: 20px; align-items: baseline;
+  padding-top: 10px; border-top: 1px solid var(--rule); margin-top: 2px;
+}
+.fundamentals-item { display: flex; flex-direction: column; gap: 2px; }
+.fundamentals-label { font-size: 0.75rem; color: var(--muted); font-family: var(--font-sans); }
+.fundamentals-value { font-family: var(--font-mono); font-weight: 600; font-size: 0.95rem; }
+.fundamentals-loading { padding-top: 10px; border-top: 1px solid var(--rule); margin-top: 2px; }
+
+/* Карточка сравнения с индексом на дашборде */
+.benchmark-row { display: flex; gap: 32px; margin: 14px 0 10px; }
+.benchmark-col { display: flex; flex-direction: column; gap: 4px; }
+.benchmark-label { font-size: 0.8rem; color: var(--muted); font-family: var(--font-sans); }
+.benchmark-value { font-family: var(--font-mono); font-size: 1.6rem; font-weight: 650; }
+.benchmark-verdict { font-family: var(--font-sans); font-weight: 600; font-size: 0.9rem; margin: 0; }
+
+/* Панель прогноза Claude */
+.forecast-panel { padding-top: 10px; border-top: 1px solid var(--rule); margin-top: 2px; }
+.forecast-header { display: flex; justify-content: space-between; align-items: center; gap: 12px; flex-wrap: wrap; margin-bottom: 6px; }
+.forecast-header h3 { margin: 0; font-size: 0.95rem; font-weight: 650; font-family: var(--font-sans); }
+.forecast-summary { font-family: var(--font-sans); font-size: 0.92rem; line-height: 1.5; margin: 4px 0 14px; }
+
+.forecast-scenarios { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 12px; margin-bottom: 14px; }
+.forecast-scenario { border: 1px solid var(--rule); border-radius: var(--radius); padding: 10px 12px; }
+.forecast-scenario-head { display: flex; justify-content: space-between; font-family: var(--font-sans); font-weight: 650; font-size: 0.85rem; margin-bottom: 6px; }
+.forecast-prob { font-family: var(--font-mono); color: var(--accent); }
+.forecast-range { font-family: var(--font-mono); font-weight: 600; font-size: 0.95rem; margin-bottom: 6px; }
+.forecast-drivers { margin: 0; padding-left: 16px; font-size: 0.78rem; color: var(--muted); font-family: var(--font-sans); }
+.scenario-optimistic { border-left: 3px solid var(--gain); }
+.scenario-base { border-left: 3px solid var(--accent); }
+.scenario-pessimistic { border-left: 3px solid var(--loss); }
+
+.forecast-stats { display: flex; flex-direction: column; gap: 4px; font-family: var(--font-sans); font-size: 0.85rem; color: var(--ink); margin-bottom: 10px; }
+.forecast-stats strong { font-family: var(--font-mono); }
+.forecast-risks { font-family: var(--font-sans); font-size: 0.85rem; margin-bottom: 8px; }
+.forecast-meta { display: flex; justify-content: space-between; align-items: center; gap: 12px; flex-wrap: wrap; font-size: 0.75rem; color: var(--muted); font-family: var(--font-sans); margin-top: 10px; padding-top: 8px; border-top: 1px dashed var(--rule); }
+
+/* Долгосрочный прогноз и экран точности */
+.longterm-table td, .longterm-table th { white-space: nowrap; }
+.longterm-sub { display: block; font-size: 0.72rem; font-family: var(--font-mono); }
+.longterm-details { font-family: var(--font-sans); font-size: 0.82rem; margin: 8px 0; }
+.longterm-details summary { cursor: pointer; color: var(--accent); }
+.longterm-assumption { margin: 6px 0 0; color: var(--ink); line-height: 1.45; }
+.accuracy-stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(190px, 1fr)); gap: 12px; margin: 12px 0; }
+.accuracy-big { font-family: var(--font-mono); font-size: 1.5rem; font-weight: 600; }
+
+/* Этап 4: алерты, журнал, импорт */
+.alert-banner { background: #fff4df; border: 1px solid #e6c98a; border-radius: var(--radius); padding: 10px 12px; margin-bottom: 14px; font-family: var(--font-sans); font-size: 0.9rem; display: flex; flex-direction: column; gap: 6px; }
+.alert-banner-row { display: flex; justify-content: space-between; align-items: center; gap: 12px; flex-wrap: wrap; }
+.mono { font-family: var(--font-mono); }
+.journal-list { display: flex; flex-direction: column; gap: 12px; }
+.journal-entry { display: flex; flex-direction: column; gap: 6px; }
+.journal-head { display: flex; justify-content: space-between; gap: 12px; font-family: var(--font-sans); }
+.journal-reason { margin: 0; white-space: pre-wrap; font-family: var(--font-sans); font-size: 0.9rem; line-height: 1.45; }
+.journal-prices { display: flex; flex-wrap: wrap; gap: 6px 18px; align-items: center; font-family: var(--font-sans); font-size: 0.85rem; }
+.import-errors { color: var(--loss); font-family: var(--font-sans); font-size: 0.85rem; padding-left: 18px; }
+.row-muted { color: var(--muted); }
+textarea { width: 100%; font: inherit; padding: 8px 10px; border: 1px solid var(--rule); border-radius: var(--radius); background: transparent; color: inherit; resize: vertical; }
+
+/* Что-если */
+.whatif-presets { display: flex; flex-wrap: wrap; gap: 6px 16px; margin-top: 12px; }
+.whatif-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 12px 16px; margin: 8px 0 12px; }
+.whatif-summary { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 12px; margin-bottom: 8px; }
+.whatif-summary > div { display: flex; flex-direction: column; gap: 2px; }
+.whatif-big { font-family: var(--font-mono); font-size: 1.25rem; font-weight: 600; }
+
+
+/* Заголовки внутри карточек: без лишних отступов браузера */
+.card h3 { margin: 0 0 8px; font-size: 0.95rem; }
+.accuracy-stats .card { padding: 14px 16px; }
+.accuracy-stats h3 { font-size: 0.8rem; font-weight: 600; color: var(--muted); margin-bottom: 4px; }
+
+/* ---------- Адаптивность ---------- */
+/* Планшет и меньше: вкладки прячутся в одну кнопку-меню */
+@media (max-width: 880px) {
+  .nav-desktop { display: none; }
+  .menu-btn { display: inline-flex; }
+  .appbar-inner { gap: 12px; }
+  .benchmark-row { flex-wrap: wrap; gap: 16px 32px; }
+}
+
+/* Таблица позиций превращается в карточки на телефоне (на планшете остаётся таблицей). Правила сужены до .positions: остальные
+   таблицы (точность, алерты, импорт, что-если) просто прокручиваются вбок. */
+@media (max-width: 880px) {
+  .table-wrap.positions { overflow-x: visible; margin: 0; padding: 0; }
+  .table-wrap.positions table { min-width: 0; }
+  .positions thead { display: none; }
+  .positions table, .positions tbody, .positions tr, .positions td { display: block; width: 100%; }
+  tr.pos { padding: 14px 0; border-bottom: 1px solid var(--rule); position: relative; }
+  tr.pos td { border: 0; padding: 3px 0; display: flex; justify-content: space-between; align-items: baseline; gap: 12px; text-align: right; }
+  tr.pos td::before { content: attr(data-label); color: var(--muted); font-size: 0.85rem; text-align: left; flex-shrink: 0; font-family: var(--font-sans); }
+  tr.pos td.first { display: block; text-align: left; padding-bottom: 8px; padding-right: 44px; }
+  tr.pos td.first::before, tr.pos td.actions::before { content: none; }
+  tr.pos td.actions { position: absolute; top: 8px; right: -8px; width: auto; padding: 0; display: block; }
+  tr.note-row td { display: block; padding: 0 0 14px; border-bottom: 1px solid var(--rule); }
+  .positions .num { white-space: normal; }
+  /* Планшет: карточки позиций в две колонки, чтобы список не был бесконечным */
+  .positions tbody { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); column-gap: 32px; }
+  .positions tbody tr.note-row { grid-column: 1 / -1; }
+  .inline-form { display: flex; margin-top: 6px; }
+  .inline-form input { flex: 1; width: auto; }
+}
+
+@media (max-width: 700px) {
+  .positions tbody { display: block; }
+  main { padding: 0 16px 48px; }
+  .appbar-inner { padding-left: 16px; padding-right: 16px; }
+  .page-head { padding-top: 20px; padding-bottom: 14px; }
+  h1 { font-size: 1.35rem; }
+  .card { padding: 16px; border-radius: 12px; }
+  .accuracy-stats { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; }
+  .accuracy-big { font-size: 1.25rem; }
+  .combined-value { font-size: 2.1rem; }
+  .total-value { font-size: 1.9rem; }
+  .volatility-table th, .volatility-table td { padding: 6px 4px; font-size: 0.82rem; }
+
+  /* 16px в полях ввода: иначе iPhone приближает страницу при фокусе */
+  input, select, textarea { font-size: 16px; min-height: 44px; }
+  button { min-height: 44px; }
+  button.link, .currency-switch button, .nav-more-btn { min-height: 0; }
+  .currency-switch button { padding: 8px 14px; }
+  .form-actions { flex-wrap: wrap; }
+  .form-actions button { flex: 1; }
+  .page-actions button { min-height: 40px; padding: 8px 14px; }
+  .forecast-meta { flex-direction: column; align-items: flex-start; }
+  .alert-banner-row { align-items: flex-start; }
+}
+
+@media (max-width: 380px) {
+  .brand { font-size: 0.95rem; }
+  .combined-value { font-size: 1.85rem; }
+  .page-actions button { padding: 8px 10px; font-size: 0.85rem; }
+}
+
+td.first .sub { white-space: nowrap; }

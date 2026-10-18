@@ -1,0 +1,37 @@
+# --- secrets ---
+.env
+.env.*
+!.env.example
+
+# --- Python ---
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+.pytest_cache/
+.coverage
+htmlcov/
+
+# --- local databases (real portfolio data) ---
+*.db
+*.sqlite
+*.sqlite3
+*.db-journal
+
+# --- personal imports ---
+*.private.csv
+imports/
+
+# --- Node / Next.js ---
+node_modules/
+.next/
+out/
+*.tsbuildinfo
+next-env.d.ts
+npm-debug.log*
+
+# --- IDE / OS ---
+.idea/
+.vscode/
+.DS_Store
+Thumbs.db
