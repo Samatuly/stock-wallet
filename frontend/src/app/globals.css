@@ -519,3 +519,39 @@ tr.lot-edit td { background: color-mix(in srgb, var(--accent) 4%, transparent); 
 .template-table .req { color: var(--loss); margin-left: 2px; }
 .file-label { display: flex; flex-direction: column; gap: 6px; font-weight: 600; }
 .file-label input { font-weight: 400; }
+
+/* ---------- Компактный список акций (телефон), в стиле приложений брокеров ---------- */
+.positions .compact { display: none; }
+.ticker-avatar {
+  flex: none; width: 36px; height: 36px; border-radius: 10px;
+  display: grid; place-items: center; font-weight: 700; font-size: 0.8rem; letter-spacing: 0.02em;
+  color: #fff; background: var(--market-us, var(--accent));
+}
+.ticker-avatar.us { background: var(--market-us, var(--accent)); }
+.ticker-avatar.eu { background: var(--market-eu, #b26b00); }
+.ticker-avatar.kz { background: var(--market-kz, #6a5acd); }
+.detail-bar { flex-wrap: wrap; align-items: center; }
+.detail-meta { color: var(--muted); font-size: 0.85rem; margin-left: auto; font-variant-numeric: tabular-nums; }
+
+@media (max-width: 880px) {
+  .positions tbody { display: block !important; }
+  .positions tr.pos { padding: 0; border-bottom: 1px solid var(--rule); }
+  .positions tr.pos > td:not(.compact) { display: none !important; }
+  .positions tr.pos > td.compact { display: block !important; padding: 0; }
+  .compact-btn {
+    width: 100%; display: flex; align-items: center; gap: 12px;
+    background: none; color: inherit; padding: 12px 2px; min-height: 0; border-radius: 0; text-align: left; font-weight: 400;
+  }
+  .compact-btn:hover { filter: none; }
+  .compact-body { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 4px; }
+  .compact-line { display: flex; justify-content: space-between; align-items: baseline; gap: 10px; }
+  .compact-line .ticker { font-size: 1.05rem; font-weight: 600; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .compact-price { font-size: 1.05rem; font-variant-numeric: tabular-nums; }
+  .compact-sub { font-size: 0.88rem; }
+  .compact-qty { color: var(--muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; min-width: 0; font-variant-numeric: tabular-nums; }
+  .compact-result { white-space: nowrap; font-variant-numeric: tabular-nums; }
+  .compact-pct { margin-left: 8px; }
+  .compact-result.flat { color: var(--muted); }
+  .positions tr.note-row > td { padding: 10px 0 14px; }
+  .detail-meta { margin-left: 0; width: 100%; }
+}

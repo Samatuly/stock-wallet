@@ -8,7 +8,7 @@ import PositionForm from "@/components/PositionForm";
 import PriceChart from "@/components/PriceChart";
 
 const MARKET_LABEL = { US: "США", EU: "Европа", KZ: "Казахстан" } as const;
-const COLS = 8;
+const COLS = 9;
 
 interface Props {
   positions: Valuation[];
@@ -34,6 +34,7 @@ export default function PositionTable({ positions, onDelete, onSetPrice, onUpdat
       <table>
         <thead>
           <tr>
+            <th className="compact" aria-hidden="true" />
             <th>Акция</th>
             <th className="num">Кол-во</th>
             <th className="num">Ср. цена покупки</th>
@@ -82,6 +83,28 @@ function HoldingRow({
   return (
     <>
       <tr className={`pos ${open ? "is-open" : ""}`}>
+        <td className="compact">
+          <button type="button" className="compact-btn" onClick={onToggle} aria-expanded={open}>
+            <span className={`ticker-avatar ${h.market.toLowerCase()}`} aria-hidden="true">
+              {h.ticker.replace(/[^A-Z0-9]/gi, "").slice(0, 2)}
+            </span>
+            <span className="compact-body">
+              <span className="compact-line">
+                <span className="ticker">{h.ticker}</span>
+                <span className="compact-price">{plainNumber(h.currentPrice)}</span>
+              </span>
+              <span className="compact-line compact-sub">
+                <span className="compact-qty">
+                  {number(h.quantity, 4)} шт. по {plainNumber(h.avgPrice)}
+                </span>
+                <span className={`compact-result ${tone(h.pnlAmount)}`}>
+                  {h.value === null ? "—" : plainNumber(h.value)}
+                  <span className="compact-pct">{signedPercent(h.pnlPercent)}</span>
+                </span>
+              </span>
+            </span>
+          </button>
+        </td>
         <td className="first" data-label="">
           <button className="ticker-btn" onClick={onToggle} aria-expanded={open} title="Подробнее: график и история покупок">
             <span className={`market-dot ${h.market.toLowerCase()}`} aria-hidden="true" />
@@ -216,6 +239,18 @@ function HoldingRow({
               >
                 История покупок · {h.lots.length}
               </button>
+              <button type="button" className={`chip ${panel === "add" ? "active" : ""}`} onClick={() => setPanel(panel === "add" ? null : "add")}>
+                Докупить
+              </button>
+              {!needsPrice && (
+                <button type="button" className={`chip ${panel === "price" ? "active" : ""}`} onClick={() => setPanel(panel === "price" ? null : "price")}>
+                  {h.priceIsManual ? "Изменить цену" : "Своя цена"}
+                </button>
+              )}
+              <span className="detail-meta">
+                {money(h.value, h.currency)} · {signedMoney(h.pnlAmount, h.currency)}
+                {h.priceSource && ` · цена: ${SOURCE_LABEL[h.priceSource] ?? h.priceSource}`}
+              </span>
             </div>
             {historyOpen && <LotHistory h={h} onDelete={onDelete} onUpdate={onUpdate} />}
             <PriceChart ticker={h.ticker} currency={h.currency} buyPrice={h.avgPrice} />
@@ -394,6 +429,12 @@ function ManualPriceForm({
       </button>
     </form>
   );
+}
+
+/** Число без знака валюты, как в приложениях брокеров: 1 234,56 */
+function plainNumber(v: number | null): string {
+  if (v === null) return "—";
+  return new Intl.NumberFormat("ru-RU", { minimumFractionDigits: 2, maximumFractionDigits: 2 }).format(v);
 }
 
 function plural(n: number, one: string, few: string, many: string): string {
