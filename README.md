@@ -1,6 +1,6 @@
 ﻿# Stock Wallet
 
-![tests](https://github.com/YOUR_USERNAME/stock-wallet/actions/workflows/tests.yml/badge.svg)
+![tests](https://github.com/Samatuly/stock-wallet/actions/workflows/tests.yml/badge.svg)
 
 A personal stock portfolio tracker with live prices, multi-currency P&L and **probabilistic AI forecasts powered by Claude**.
 Supports US, European and Kazakhstan markets.
