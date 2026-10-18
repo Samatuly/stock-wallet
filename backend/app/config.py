@@ -12,7 +12,7 @@ class Settings(BaseSettings):
     # Freedom Broker / Tradernet: котировки KASE. Ключи создаются в личном кабинете Freedom.
     tradernet_public_key: str = ""
     tradernet_private_key: str = ""
-    tradernet_domain: str = "freedom24.com"
+    tradernet_domain: str = "tradernet.com"
     database_url: str = "sqlite:///./stockwallet.db"
     price_ttl_seconds: int = 300
     fx_ttl_seconds: int = 86400  # курсы валют обновляются не чаще раза в сутки

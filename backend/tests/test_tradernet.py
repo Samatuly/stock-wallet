@@ -38,7 +38,7 @@ def test_request_is_signed_like_official_sdk():
 
     p = TradernetProvider("pub", "secret", http_post=fake_post)
     assert p.fetch("HSBK") == (387.5, "KZT")
-    assert sent["url"] == "https://freedom24.com/api/getStockQuotesJson"
+    assert sent["url"] == "https://tradernet.com/api/getStockQuotesJson"
     assert json.loads(sent["content"]) == {"tickers": "HSBK.KZ"}
     h = sent["headers"]
     expected = hmac.new(b"secret", (sent["content"] + h["X-NtApi-Timestamp"]).encode(), hashlib.sha256).hexdigest()
@@ -109,3 +109,17 @@ def test_us_market_does_not_use_tradernet(db, clock):
     service = QuoteService(db, Fake("finnhub", (195.0, "USD")), Fake("yfinance"), now=clock, tradernet=tn)
     assert service.get_quote("AAPL", "US").source == "finnhub"
     assert tn.calls == 0
+
+
+def test_get_request_signs_timestamp_only():
+    sent = {}
+
+    def fake_get(url, headers, params, timeout):
+        sent.update(headers=headers, params=params)
+        return Resp({"result": {"q": [{"c": "HSBK.KZ", "ltp": 1, "x_curr": "KZT"}]}})
+
+    p = TradernetProvider("pub", "secret", http_get=fake_get)
+    p.request("getStockQuotesJson", {"tickers": "HSBK.KZ"}, method="get")
+    ts = sent["headers"]["X-NtApi-Timestamp"]
+    assert sent["headers"]["X-NtApi-Sig"] == hmac.new(b"secret", ts.encode(), hashlib.sha256).hexdigest()
+    assert sent["params"] == {"tickers": "HSBK.KZ"}

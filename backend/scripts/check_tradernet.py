@@ -15,7 +15,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 from app.config import get_settings  # noqa: E402
 from app.services.quote_provider import QuoteProviderError, TradernetProvider, parse_tradernet_quote  # noqa: E402
 
-DOMAINS = ("freedom24.com", "tradernet.kz", "tradernet.global")
+DOMAINS = ("tradernet.com", "freedom24.com", "tradernet.kz")
 
 
 def main() -> None:
@@ -33,10 +33,15 @@ def main() -> None:
         ok = 0
         for t in tickers:
             symbol = p.symbol_for(t)
-            try:
-                data = p.request("getStockQuotesJson", {"tickers": symbol})
-            except Exception as exc:
-                print(f"  {symbol}: ошибка запроса: {exc}")
+            data = None
+            for method in ("post", "get"):
+                try:
+                    data = p.request("getStockQuotesJson", {"tickers": symbol}, method=method)
+                    print(f"  {symbol}: ответ получен ({method.upper()})")
+                    break
+                except Exception as exc:
+                    print(f"  {symbol}: {method.upper()} — {exc}")
+            if data is None:
                 continue
             if raw:
                 print(json.dumps(data, ensure_ascii=False, indent=2)[:3000])

@@ -116,12 +116,13 @@ class TradernetProvider:
 
     name = "tradernet"
 
-    def __init__(self, public_key: str, private_key: str, domain: str = "freedom24.com", timeout: float = 8.0, http_post=None):
+    def __init__(self, public_key: str, private_key: str, domain: str = "tradernet.com", timeout: float = 8.0, http_post=None, http_get=None):
         self.public_key = public_key
         self.private_key = private_key
         self.domain = domain
         self.timeout = timeout
         self.http_post = http_post or httpx.post
+        self.http_get = http_get or httpx.get
 
     @property
     def enabled(self) -> bool:
@@ -137,18 +138,24 @@ class TradernetProvider:
     def sign(private_key: str, message: str) -> str:
         return hmac.new(private_key.encode(), message.encode(), hashlib.sha256).hexdigest()
 
-    def request(self, cmd: str, params: dict) -> dict:
-        payload = json.dumps(params, separators=(",", ":"))
+    def request(self, cmd: str, params: dict, method: str = "post") -> dict:
+        """POST: подпись = HMAC(тело JSON + timestamp). GET: параметры в URL, подпись = HMAC(timestamp)."""
         timestamp = str(int(time.time()))
         headers = {
-            "Content-Type": "application/json",
-            "Accept": "application/json, text/plain, */*",
+            "Accept": "application/json",
             "User-Agent": "stock-wallet/1.0 (+https://github.com/Samatuly/stock-wallet)",
             "X-NtApi-PublicKey": self.public_key,
             "X-NtApi-Timestamp": timestamp,
-            "X-NtApi-Sig": self.sign(self.private_key, payload + timestamp),
         }
-        resp = self.http_post(f"https://{self.domain}/api/{cmd}", headers=headers, content=payload, timeout=self.timeout)
+        url = f"https://{self.domain}/api/{cmd}"
+        if method == "get":
+            headers["X-NtApi-Sig"] = self.sign(self.private_key, timestamp)
+            resp = self.http_get(url, headers=headers, params=params, timeout=self.timeout)
+        else:
+            payload = json.dumps(params, separators=(",", ":"))
+            headers["Content-Type"] = "application/json"
+            headers["X-NtApi-Sig"] = self.sign(self.private_key, payload + timestamp)
+            resp = self.http_post(url, headers=headers, content=payload, timeout=self.timeout)
         status = getattr(resp, "status_code", 200)
         if status >= 400:
             # Сервер часто объясняет причину в теле ответа (неверная подпись, нет доступа) — показываем её
