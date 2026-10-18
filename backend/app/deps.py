@@ -11,7 +11,7 @@ from app.services.fx import FxService
 from app.services.history import HistoryService, YahooHistoryProvider
 from app.services.intraday import IntradayService, YahooIntradayProvider
 from app.services.long_term import LongTermForecastService
-from app.services.quote_provider import FinnhubProvider, QuoteService, YahooProvider
+from app.services.quote_provider import FinnhubProvider, QuoteService, TradernetProvider, YahooProvider
 
 
 def get_quote_service(db: Session = Depends(get_db)) -> QuoteService:
@@ -21,6 +21,11 @@ def get_quote_service(db: Session = Depends(get_db)) -> QuoteService:
         finnhub=FinnhubProvider(settings.finnhub_api_key),
         yahoo=YahooProvider(),
         ttl_seconds=settings.price_ttl_seconds,
+        tradernet=TradernetProvider(
+            settings.tradernet_public_key,
+            settings.tradernet_private_key,
+            domain=settings.tradernet_domain,
+        ),
     )
 
 

@@ -33,6 +33,7 @@ export function tone(value: number | null | undefined): "gain" | "loss" | "flat"
 export const SOURCE_LABEL: Record<string, string> = {
   finnhub: "Finnhub",
   yfinance: "Yahoo",
+  tradernet: "Freedom",
   manual: "вручную",
   "cache-stale": "устарела",
 };
