@@ -2,11 +2,11 @@
 
 import { useCallback, useEffect, useState } from "react";
 import AddPositionForm from "@/components/AddPositionForm";
+import Link from "next/link";
 import CombinedTotal from "@/components/CombinedTotal";
 import PositionTable from "@/components/PositionTable";
 import Totals from "@/components/Totals";
 import AppHeader from "@/components/AppHeader";
-import Collapsible from "@/components/Collapsible";
 import AlertBanner from "@/components/AlertBanner";
 import { api, type NewPosition, type Portfolio } from "@/lib/api";
 
@@ -15,6 +15,7 @@ export default function Home() {
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const [displayCurrency, setDisplayCurrency] = useState("USD");
+  const [adding, setAdding] = useState(false);
 
   const load = useCallback(
     async (refresh = false) => {
@@ -38,6 +39,11 @@ export default function Home() {
   async function add(p: NewPosition) {
     await api.addPosition(p);
     await load();
+  }
+
+  async function addFromTopForm(p: NewPosition) {
+    await add(p);
+    setAdding(false);
   }
 
   async function update(id: number, p: NewPosition) {
@@ -91,18 +97,36 @@ export default function Home() {
         </details>
       )}
 
+      <div className="positions-toolbar">
+        <button type="button" className="btn-primary" onClick={() => setAdding((v) => !v)} aria-expanded={adding}>
+          <svg width="14" height="14" viewBox="0 0 14 14" aria-hidden="true">
+            <path d="M7 1.5v11M1.5 7h11" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
+          </svg>
+          {adding ? "Закрыть" : "Добавить позицию"}
+        </button>
+        <Link href="/import" className="toolbar-link">
+          Импорт из CSV
+        </Link>
+      </div>
+
+      {adding && (
+        <section className="card add-card">
+          <AddPositionForm onAdd={addFromTopForm} />
+        </section>
+      )}
+
       <section className="card">
         {data ? (
-          <PositionTable positions={data.positions} onDelete={remove} onSetPrice={setPrice} onUpdate={update} />
+          <PositionTable
+            positions={data.positions}
+            onDelete={remove}
+            onSetPrice={setPrice}
+            onUpdate={update}
+            onAdd={add}
+          />
         ) : (
           !error && <p className="empty">Загружаю портфель…</p>
         )}
-      </section>
-
-      <section className="card card-flush">
-        <Collapsible title="Добавить позицию" hint="тикер, количество, цена, дата">
-          <AddPositionForm onAdd={add} />
-        </Collapsible>
       </section>
 
       <footer>

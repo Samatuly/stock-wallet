@@ -2,11 +2,21 @@ from fastapi import APIRouter, Depends, HTTPException, Query, Response, status
 from sqlalchemy.orm import Session
 
 from app.db import get_db
-from app.deps import get_fundamentals_service, get_history_service, get_quote_service
+from app.deps import get_fundamentals_service, get_history_service, get_intraday_service, get_quote_service
 from app.models import ManualPrice, utcnow
-from app.schemas import FundamentalsOut, HistoryPoint, IndicatorSeries, ManualPriceIn, Market, QuoteOut
+from app.schemas import (
+    FundamentalsOut,
+    HistoryPoint,
+    IndicatorSeries,
+    IntradayOut,
+    IntradayPointOut,
+    ManualPriceIn,
+    Market,
+    QuoteOut,
+)
 from app.services.fundamentals import FundamentalsService
 from app.services.history import HistoryService
+from app.services.intraday import IntradayService
 from app.services.indicators import macd as compute_macd
 from app.services.indicators import rsi as compute_rsi
 from app.services.indicators import sma as compute_sma
@@ -57,6 +67,16 @@ def get_indicators(
         macd=macd_line,
         macd_signal=macd_signal,
         macd_histogram=macd_hist,
+    )
+
+
+@router.get("/quotes/{ticker}/intraday", response_model=IntradayOut)
+def get_intraday(ticker: str, service: IntradayService = Depends(get_intraday_service)):
+    """Цены за последний торговый день (шаг 5 минут). Пустой список, если источник недоступен."""
+    points = service.get(ticker)
+    return IntradayOut(
+        ticker=ticker.upper(),
+        points=[IntradayPointOut(time=p.time, price=round(p.price, 4)) for p in points],
     )
 
 

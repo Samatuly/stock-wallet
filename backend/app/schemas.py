@@ -152,6 +152,18 @@ class IndicatorSeries(BaseModel):
     macd_histogram: list[Optional[float]]
 
 
+class IntradayPointOut(BaseModel):
+    time: datetime
+    price: float
+
+
+class IntradayOut(BaseModel):
+    """Цены за последний торговый день с шагом 5 минут."""
+
+    ticker: str
+    points: list[IntradayPointOut]
+
+
 class FundamentalsOut(BaseModel):
     ticker: str
     pe_ratio: Optional[float] = None

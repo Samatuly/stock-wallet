@@ -9,6 +9,7 @@ from app.services.forecast import ForecastService
 from app.services.fundamentals import FundamentalsService, YahooFundamentalsProvider
 from app.services.fx import FxService
 from app.services.history import HistoryService, YahooHistoryProvider
+from app.services.intraday import IntradayService, YahooIntradayProvider
 from app.services.long_term import LongTermForecastService
 from app.services.quote_provider import FinnhubProvider, QuoteService, YahooProvider
 
@@ -31,6 +32,10 @@ def get_fx_service(db: Session = Depends(get_db)) -> FxService:
 def get_history_service(db: Session = Depends(get_db)) -> HistoryService:
     settings = get_settings()
     return HistoryService(db, YahooHistoryProvider(), ttl_seconds=settings.history_ttl_seconds)
+
+
+def get_intraday_service() -> IntradayService:
+    return IntradayService(YahooIntradayProvider())
 
 
 def get_fundamentals_service(db: Session = Depends(get_db)) -> FundamentalsService:

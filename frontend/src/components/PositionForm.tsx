@@ -22,7 +22,7 @@ interface Props {
 export default function PositionForm({ initial, submitLabel, onSubmit, onCancel }: Props) {
   const [market, setMarket] = useState<Market>(initial?.market ?? "US");
   const [ticker, setTicker] = useState(initial?.ticker ?? "");
-  const [quantity, setQuantity] = useState(initial ? String(initial.quantity) : "");
+  const [quantity, setQuantity] = useState(initial && initial.quantity ? String(initial.quantity) : "");
   const [buyPrice, setBuyPrice] = useState(initial ? String(initial.buy_price) : "");
   const [buyDate, setBuyDate] = useState(initial?.buy_date ?? today());
   const [fee, setFee] = useState(initial && initial.fee ? String(initial.fee) : "");

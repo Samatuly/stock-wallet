@@ -328,6 +328,11 @@ export interface WhatIfResult {
   rate_date: string | null;
 }
 
+export interface Intraday {
+  ticker: string;
+  points: { time: string; price: number }[];
+}
+
 export interface HistoryPoint {
   date: string;
   open: number;
@@ -378,6 +383,7 @@ export const api = {
     request<Dashboard>(`/dashboard?display_currency=${displayCurrency}`),
   indicators: (ticker: string, days = 220) =>
     request<IndicatorSeries>(`/quotes/${ticker}/indicators?days=${days}`),
+  intraday: (ticker: string) => request<Intraday>(`/quotes/${ticker}/intraday`),
   fundamentals: (ticker: string) => request<Fundamentals>(`/quotes/${ticker}/fundamentals`),
   getForecast: (ticker: string, horizonDays: number) =>
     request<Forecast | null>(`/forecasts/${ticker}?horizon_days=${horizonDays}`),

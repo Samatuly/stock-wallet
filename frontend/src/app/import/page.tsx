@@ -6,6 +6,27 @@ import { useState } from "react";
 import { api, type ImportResult } from "@/lib/api";
 import { number } from "@/lib/format";
 
+// Шаблон с разделителем «;» и BOM: так русский Excel открывает его сразу по колонкам и без «кракозябр».
+const TEMPLATE_ROWS = [
+  ["тикер", "количество", "цена покупки", "дата", "рынок", "валюта", "комиссия", "комментарий"],
+  ["AAPL", "10", "172,40", "15.03.2025", "US", "USD", "1", "Первая покупка"],
+  ["AAPL", "5", "189,90", "20.06.2025", "US", "USD", "1", "Докупил на просадке"],
+  ["SAP.DE", "8", "172,00", "02.04.2025", "EU", "EUR", "2,5", ""],
+  ["KSPI", "3", "95,10", "10.01.2025", "US", "USD", "0", "Kaspi на Nasdaq"],
+];
+
+function downloadTemplate() {
+  const csv = "\uFEFF" + TEMPLATE_ROWS.map((r) => r.join(";")).join("\r\n") + "\r\n";
+  const url = URL.createObjectURL(new Blob([csv], { type: "text/csv;charset=utf-8" }));
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = "stock-wallet-шаблон.csv";
+  document.body.appendChild(a);
+  a.click();
+  a.remove();
+  URL.revokeObjectURL(url);
+}
+
 export default function ImportPage() {
   const [csvText, setCsvText] = useState<string | null>(null);
   const [fileName, setFileName] = useState("");
@@ -60,7 +81,46 @@ export default function ImportPage() {
           ГГГГ-ММ-ДД или ДД.ММ.ГГГГ. Если рынок не указан, он определяется по тикеру (SAP.DE — Европа, KZTK.KZ — Казахстан,
           остальное — США). Позиции, которые уже есть в портфеле, пропускаются.
         </p>
-        <input type="file" accept=".csv,text/csv,text/plain" onChange={(e) => onFile(e.target.files?.[0])} />
+        <div className="template-box">
+          <div className="template-head">
+            <div>
+              <strong>Готовый шаблон</strong>
+              <p className="hint-inline">Скачайте, откройте в Excel или Google Таблицах, замените примеры своими покупками и сохраните как CSV.</p>
+            </div>
+            <button type="button" className="btn-primary" onClick={downloadTemplate}>
+              Скачать шаблон CSV
+            </button>
+          </div>
+          <div className="table-wrap">
+            <table className="template-table">
+              <thead>
+                <tr>
+                  {TEMPLATE_ROWS[0].map((h, i) => (
+                    <th key={h}>
+                      {h}
+                      {i < 4 && <span className="req" title="обязательно">*</span>}
+                    </th>
+                  ))}
+                </tr>
+              </thead>
+              <tbody>
+                {TEMPLATE_ROWS.slice(1, 3).map((r, i) => (
+                  <tr key={i}>
+                    {r.map((c, j) => (
+                      <td key={j}>{c}</td>
+                    ))}
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+          <p className="hint-inline">* обязательные колонки. Несколько покупок одной акции — отдельными строками, в портфеле они объединятся.</p>
+        </div>
+
+        <label className="file-label">
+          <span>Загрузить заполненный файл</span>
+          <input type="file" accept=".csv,text/csv,text/plain" onChange={(e) => onFile(e.target.files?.[0])} />
+        </label>
         {fileName && <p className="hint-inline">Файл: {fileName}</p>}
       </section>
 
