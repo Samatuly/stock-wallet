@@ -142,12 +142,18 @@ class TradernetProvider:
         timestamp = str(int(time.time()))
         headers = {
             "Content-Type": "application/json",
+            "Accept": "application/json, text/plain, */*",
+            "User-Agent": "stock-wallet/1.0 (+https://github.com/Samatuly/stock-wallet)",
             "X-NtApi-PublicKey": self.public_key,
             "X-NtApi-Timestamp": timestamp,
             "X-NtApi-Sig": self.sign(self.private_key, payload + timestamp),
         }
         resp = self.http_post(f"https://{self.domain}/api/{cmd}", headers=headers, content=payload, timeout=self.timeout)
-        resp.raise_for_status()
+        status = getattr(resp, "status_code", 200)
+        if status >= 400:
+            # Сервер часто объясняет причину в теле ответа (неверная подпись, нет доступа) — показываем её
+            body = (getattr(resp, "text", "") or "")[:300].strip()
+            raise QuoteProviderError(f"Tradernet HTTP {status}: {body or 'без описания'}")
         return resp.json()
 
     def fetch(self, ticker: str) -> tuple[float, Optional[str]]:
@@ -156,6 +162,8 @@ class TradernetProvider:
         symbol = self.symbol_for(ticker)
         try:
             data = self.request("getStockQuotesJson", {"tickers": symbol})
+        except QuoteProviderError:
+            raise
         except (httpx.HTTPError, ValueError) as exc:
             raise QuoteProviderError(f"Tradernet: {exc}") from exc
         return parse_tradernet_quote(data, symbol)
